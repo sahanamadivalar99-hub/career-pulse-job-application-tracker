@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::content}, ~{::title}, ~{::pageHeading})}">
+<head>
+    <title>Dashboard - CareerPulse</title>
+</head>
+<body>
+    <div th:fragment="pageHeading">
+        <span class="fw-bold">Executive Dashboard</span>
+    </div>
+
+    <div th:fragment="content">
+        <!-- Welcome Banner -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-2 border-bottom">
+            <div>
+                <h4 class="fw-bold mb-1">
+                    Welcome back, <span style="color: var(--primary-purple);" th:text="${currentUser != null ? currentUser.fullName : 'Sahana'}">Sahana</span>! 👋
+                </h4>
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                    <span th:text="${currentUser != null && currentUser.location != null ? currentUser.location : 'Bengaluru, Karnataka, India'}">Bengaluru, Karnataka, India</span>
+                    <span class="mx-2">•</span>
+                    <span class="badge bg-purple-subtle text-purple" th:text="${currentUser != null ? currentUser.targetRole : 'Java Full Stack Developer'}">Java Full Stack Developer</span>
+                </p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <a th:href="@{/applications/new}" class="btn btn-purple btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i> Track New Job
+                </a>
+                <a th:href="@{/resume-analyzer}" class="btn btn-purple-light btn-sm">
+                    <i class="bi bi-file-earmark-person-fill me-1"></i> Analyze Resume
+                </a>
+            </div>
+        </div>
+
+        <!-- 1. Key Statistics Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="bi bi-folder2-open"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number" th:text="${stats.totalApplications}">0</div>
+                        <div class="stat-title">Total Applications</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number" th:text="${stats.inReviewCount}">0</div>
+                        <div class="stat-title">In Progress</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="stat-card">
+                    <div class="stat-icon amber">
+                        <i class="bi bi-calendar-check-fill"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number" th:text="${stats.interviewCount}">0</div>
+                        <div class="stat-title">Interviews</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="bi bi-trophy-fill"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number" th:text="${stats.offerCount}">0</div>
+                        <div class="stat-title">Offers Received</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="stat-card">
+                    <div class="stat-icon rose">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number" th:text="${stats.rejectedCount}">0</div>
+                        <div class="stat-title">Rejected</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number">
+                            <span th:text="${stats.latestAtsScore}">0</span><span class="fs-6 text-muted">/100</span>
+                        </div>
+                        <div class="stat-title">ATS Resume Score</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Charts Row: Status Breakdown Donut & Monthly Progress -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-4">
+                <div class="card-saas h-100">
+                    <div class="card-header-clean">
+                        <h6 class="mb-0 fw-bold text-dark">
+                            <i class="bi bi-pie-chart-fill text-purple me-2"></i> Application Status
+                        </h6>
+                        <span class="badge bg-light text-muted fw-normal" th:text="${stats.totalApplications} + ' total'">6 total</span>
+                    </div>
+                    <div class="card-body-clean chart-container-box d-flex align-items-center justify-content-center">
+                        <div id="statusEmptyState" class="text-center p-3 text-muted d-none">
+                            <i class="bi bi-pie-chart text-secondary fs-1 d-block mb-2"></i>
+                            <div class="fw-semibold text-dark small">No application status data yet</div>
+                            <p class="small text-muted mb-0">Add your first job application to see the pipeline breakdown.</p>
+                        </div>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card-saas h-100">
+                    <div class="card-header-clean">
+                        <h6 class="mb-0 fw-bold text-dark">
+                            <i class="bi bi-bar-chart-line-fill text-purple me-2"></i> Monthly Application Activity
+                        </h6>
+                        <span class="badge bg-light text-muted fw-normal">Last 6 Months</span>
+                    </div>
+                    <div class="card-body-clean chart-container-box d-flex align-items-center justify-content-center">
+                        <div id="trendEmptyState" class="text-center p-3 text-muted d-none">
+                            <i class="bi bi-bar-chart-line text-secondary fs-1 d-block mb-2"></i>
+                            <div class="fw-semibold text-dark small">No application timeline data yet</div>
+                            <p class="small text-muted mb-0">Monthly activity will appear here as applications are submitted.</p>
+                        </div>
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Upcoming Interviews & Recent Applications & Mini Calendar -->
+        <div class="row g-4">
+            <!-- Upcoming Interviews & Schedule -->
+            <div class="col-lg-5">
+                <div class="card-saas mb-4">
+                    <div class="card-header-clean">
+                        <h6 class="mb-0 fw-bold text-dark">
+                            <i class="bi bi-camera-video-fill text-warning me-2"></i> Upcoming Interviews
+                        </h6>
+                        <a th:href="@{/reminders}" class="btn btn-sm btn-link text-purple p-0 text-decoration-none">View All</a>
+                    </div>
+                    <div class="card-body-clean p-0">
+                        <div th:if="${#lists.isEmpty(upcomingInterviews)}" class="p-4 text-center text-muted">
+                            <i class="bi bi-calendar2-x fs-2 d-block mb-2"></i>
+                            No interviews scheduled yet. Keep applying!
+                        </div>
+                        <ul class="list-group list-group-flush" th:unless="${#lists.isEmpty(upcomingInterviews)}">
+                            <li class="list-group-item p-3 border-0 border-bottom" th:each="interview : ${upcomingInterviews}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 fw-bold text-dark" th:text="${interview.companyName}">Google</h6>
+                                        <div class="small text-muted" th:text="${interview.jobRole}">Java Backend Engineer</div>
+                                        <div class="small text-warning mt-1" th:if="${interview.interviewDate != null}">
+                                            <i class="bi bi-clock me-1"></i>
+                                            <span th:text="${#temporals.format(interview.interviewDate, 'EEE, dd MMM yyyy - hh:mm a')}">Date</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge badge-interview">Interview</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Calendar Card -->
+                <div class="card-saas">
+                    <div class="card-header-clean">
+                        <h6 class="mb-0 fw-bold text-dark">
+                            <i class="bi bi-calendar3 text-purple me-2"></i> Application Calendar
+                        </h6>
+                        <span class="small text-muted" th:text="${#temporals.format(#temporals.createNow(), 'MMMM yyyy')}">November 2026</span>
+                    </div>
+                    <div class="card-body-clean">
+                        <div class="p-3 bg-light rounded text-center">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold text-purple" th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM dd, yyyy')}">Today</span>
+                                <span class="badge bg-purple text-white">Active Cycle</span>
+                            </div>
+                            <p class="small text-muted mb-0">
+                                You have <strong th:text="${#lists.size(upcomingReminders)}">3</strong> scheduled tasks and follow-ups this week.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Applications Table -->
+            <div class="col-lg-7">
+                <div class="card-saas h-100">
+                    <div class="card-header-clean">
+                        <h6 class="mb-0 fw-bold text-dark">
+                            <i class="bi bi-clock-history text-purple me-2"></i> Recent Applications
+                        </h6>
+                        <a th:href="@{/applications}" class="btn btn-sm btn-purple-light">View All Applications</a>
+                    </div>
+                    <div class="card-body-clean p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">Company & Role</th>
+                                        <th>Date</th>
+                                        <th>Location</th>
+                                        <th>Status</th>
+                                        <th class="text-end pe-4">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(recentApplications)}">
+                                        <td colspan="5" class="text-center p-4 text-muted">No applications found. Click "Add Application" above to begin.</td>
+                                    </tr>
+                                    <tr th:each="app : ${recentApplications}">
+                                        <td class="ps-4">
+                                            <div class="fw-bold text-dark" th:text="${app.companyName}">Company</div>
+                                            <div class="small text-muted" th:text="${app.jobRole}">Role</div>
+                                        </td>
+                                        <td class="small" th:text="${#temporals.format(app.applicationDate, 'dd MMM yyyy')}">01 Jan 2026</td>
+                                        <td class="small text-muted" th:text="${app.location}">Remote</td>
+                                        <td>
+                                            <span class="badge-status" th:classappend="${app.status.cssClass}" th:text="${app.status.displayName}">Applied</span>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <a th:href="@{'/applications/' + ${app.id}}" class="btn btn-sm btn-light">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inject Chart Data Scripts (Placed inside content fragment so Thymeleaf renders them) -->
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            window.statusData = /*[[${stats.statusBreakdown}]]*/ {};
+            window.trendData = /*[[${stats.monthlyTrend}]]*/ {};
+            /*]]>*/
+        </script>
+        <script th:src="@{/js/dashboard-charts.js}"></script>
+    </div>
+</body>
+</html>

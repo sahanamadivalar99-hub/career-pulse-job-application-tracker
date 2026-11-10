@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::content}, ~{::title}, ~{::pageHeading})}">
+<head>
+    <title>AI Career Assistant - CareerPulse</title>
+</head>
+<body>
+    <div th:fragment="pageHeading">
+        <span class="fw-bold">AI Career Assistant</span>
+    </div>
+
+    <div th:fragment="content">
+        <div class="row g-4">
+            <!-- Left: Suggested Prompts & Tips -->
+            <div class="col-lg-4">
+                <div class="card-saas mb-4">
+                    <div class="card-header-clean">
+                        <h6 class="mb-0 fw-bold text-dark">
+                            <i class="bi bi-lightbulb-fill text-warning me-2"></i> Suggested Career Prompts
+                        </h6>
+                    </div>
+                    <div class="card-body-clean">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-purple-light text-start small quick-prompt-btn" 
+                                    data-prompt="What skills should I learn for Java Developer jobs?">
+                                <i class="bi bi-mortarboard me-2"></i> What skills should I learn for Java Developer jobs?
+                            </button>
+                            <button type="button" class="btn btn-purple-light text-start small quick-prompt-btn" 
+                                    data-prompt="How can I improve my resume for ATS?">
+                                <i class="bi bi-file-earmark-check me-2"></i> How can I improve my resume?
+                            </button>
+                            <button type="button" class="btn btn-purple-light text-start small quick-prompt-btn" 
+                                    data-prompt="What projects should I build to impress recruiters?">
+                                <i class="bi bi-code-square me-2"></i> What projects should I build?
+                            </button>
+                            <button type="button" class="btn btn-purple-light text-start small quick-prompt-btn" 
+                                    data-prompt="How should I prepare for technical interviews?">
+                                <i class="bi bi-patch-question me-2"></i> How should I prepare for technical interviews?
+                            </button>
+                            <button type="button" class="btn btn-purple-light text-start small quick-prompt-btn" 
+                                    data-prompt="Which certifications are useful for software engineers?">
+                                <i class="bi bi-award me-2"></i> Which certifications are useful?
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-saas">
+                    <div class="card-header-clean">
+                        <h6 class="mb-0 fw-bold text-dark">
+                            <i class="bi bi-cpu-fill text-purple me-2"></i> Engine Configuration
+                        </h6>
+                    </div>
+                    <div class="card-body-clean small text-muted">
+                        <p>
+                            <strong>Dual Engine Support:</strong>
+                        </p>
+                        <ul class="ps-3 mb-3">
+                            <li><span class="badge bg-success">Gemini LLM API</span>: If an API key is configured in <a th:href="@{/settings}">Settings</a>.</li>
+                            <li><span class="badge bg-primary">Java Career Engine</span>: Automatic fallback if offline or no API key is provided.</li>
+                        </ul>
+                        <div class="alert alert-info py-2 px-3 small mb-0">
+                            <i class="bi bi-info-circle me-1"></i> Responses transparently state which engine generated them.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Interactive Chat Interface -->
+            <div class="col-lg-8">
+                <div class="card-saas chat-container">
+                    <div class="card-header-clean">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="stat-icon purple" style="width: 36px; height: 36px; font-size: 1rem;">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold text-dark">Interactive Career Advisor</h6>
+                                <span class="small text-muted">Powered by Java 21 & Gemini AI</span>
+                            </div>
+                        </div>
+                        <a th:href="@{/career-assistant/clear}" class="btn btn-sm btn-outline-secondary" onclick="return confirm('Clear chat history?');">
+                            <i class="bi bi-trash me-1"></i> Clear Chat
+                        </a>
+                    </div>
+
+                    <!-- Messages Feed -->
+                    <div class="chat-messages" id="chatMessages">
+                        <div th:each="msg : ${history}" th:classappend="'chat-bubble ' + ${msg.role}">
+                            <div th:if="${msg.role == 'assistant'}" class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge" th:classappend="${msg.provider == 'LLM' ? 'bg-success' : 'bg-primary'}" 
+                                      style="font-size:0.68rem;" 
+                                      th:text="${msg.provider == 'LLM' ? 'Gemini AI' : 'Java Knowledge Engine'}">Engine</span>
+                            </div>
+                            <div style="white-space: pre-wrap;" th:text="${msg.content}">Message content</div>
+                        </div>
+                    </div>
+
+                    <!-- Input Form -->
+                    <div class="p-3 border-top bg-white rounded-bottom">
+                        <form id="chatForm" class="d-flex gap-2">
+                            <input type="text" id="messageInput" class="form-control" 
+                                   placeholder="Ask anything about skills, resumes, interview prep, or projects..." required autocomplete="off">
+                            <button type="submit" class="btn btn-purple px-4">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/chat.js}"></script>
+</body>
+</html>

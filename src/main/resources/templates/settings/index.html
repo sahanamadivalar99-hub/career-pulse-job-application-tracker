@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::content}, ~{::title}, ~{::pageHeading})}">
+<head>
+    <title>Settings & AI Configuration - CareerPulse</title>
+</head>
+<body>
+    <div th:fragment="pageHeading">
+        <span class="fw-bold">Platform Settings & Integrations</span>
+    </div>
+
+    <div th:fragment="content">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card-saas mb-4">
+                    <div class="card-header-clean">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-person-gear text-purple fs-5"></i>
+                            <h6 class="mb-0 fw-bold">User Profile & AI Configuration</h6>
+                        </div>
+                    </div>
+                    <div class="card-body-clean">
+                        <form th:action="@{/settings/save}" method="post">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small">Full Name</label>
+                                    <input type="text" name="fullName" class="form-control" th:value="${user.fullName}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small">Email Address</label>
+                                    <input type="email" name="email" class="form-control" th:value="${user.email}" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Target Job Role / Career Goal</label>
+                                <input type="text" name="targetRole" class="form-control" th:value="${user.targetRole}" 
+                                       placeholder="e.g. Java Full Stack Developer / AI & Data Engineer">
+                                <div class="form-text">Used to customize your ATS analysis and skills gap recommendations.</div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small">Current Location</label>
+                                    <input type="text" name="location" class="form-control" th:value="${user.location}" 
+                                           placeholder="e.g. Bengaluru, Karnataka, India">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small">Education / Degree</label>
+                                    <input type="text" name="education" class="form-control" th:value="${user.education}" 
+                                           placeholder="e.g. B.E. Engineering Student">
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small">Experience Level</label>
+                                    <input type="text" name="experience" class="form-control" th:value="${user.experience}" 
+                                           placeholder="e.g. Fresher">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small">Preferred Job Location</label>
+                                    <input type="text" name="preferredLocation" class="form-control" th:value="${user.preferredLocation}" 
+                                           placeholder="e.g. Bengaluru">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small">Preferred Employment</label>
+                                    <input type="text" name="preferredEmployment" class="form-control" th:value="${user.preferredEmployment}" 
+                                           placeholder="e.g. Internship and Full-Time">
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            <!-- LLM API Key Configuration -->
+                            <div class="mb-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label class="form-label fw-bold text-dark small mb-0">
+                                        <i class="bi bi-key-fill text-warning me-1"></i> Gemini LLM API Key (Optional)
+                                    </label>
+                                    <span class="badge bg-purple-light text-purple">Java HTTP Client</span>
+                                </div>
+                                <input type="password" name="geminiApiKey" class="form-control font-monospace" 
+                                       placeholder="AIzaSy..." th:value="${user.geminiApiKey}">
+                                <div class="form-text">
+                                    Enter your Google Gemini API key to activate real-time LLM answers in the <strong>AI Career Assistant</strong>. 
+                                    If left empty, the application automatically uses the built-in, highly specialized <strong>Java Career Knowledge Engine</strong>.
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-purple px-4">
+                                    <i class="bi bi-check-lg me-1"></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Database & Technology Architecture Information Card -->
+                <div class="card-saas">
+                    <div class="card-header-clean">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-hdd-network-fill text-purple fs-5"></i>
+                            <h6 class="mb-0 fw-bold">System Architecture & Database Status</h6>
+                        </div>
+                    </div>
+                    <div class="card-body-clean">
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded border">
+                                    <div class="fw-bold text-dark small">Technology Stack</div>
+                                    <div class="text-muted small mt-1">
+                                        Java 21, Spring Boot 3.3.4, Spring MVC, Spring Data JPA, Hibernate, Thymeleaf, Apache PDFBox 3.0.3.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded border">
+                                    <div class="fw-bold text-dark small">MySQL Configuration</div>
+                                    <div class="text-muted small mt-1">
+                                        Database: <code>job_tracker_db</code> on port <code>3306</code>. Profile: <code>application-mysql.properties</code>.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 p-3 bg-purple-light rounded border border-purple-subtle small text-purple">
+                            <i class="bi bi-info-circle-fill me-1"></i>
+                            <strong>Dual Database Support:</strong> Zero-setup file persistence is enabled by default so the application runs out-of-the-box. To switch to local MySQL, start MySQL and start Spring Boot with <code>--spring.profiles.active=mysql</code>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

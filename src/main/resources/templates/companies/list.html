@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::content}, ~{::title}, ~{::pageHeading})}">
+<head>
+    <title>Target Companies - CareerPulse</title>
+</head>
+<body>
+    <div th:fragment="pageHeading">
+        <span class="fw-bold">Target Companies</span>
+    </div>
+
+    <div th:fragment="content">
+        <!-- Top Toolbar -->
+        <div class="card-saas mb-4">
+            <div class="card-body-clean">
+                <form th:action="@{/companies}" method="get" class="row g-3 align-items-center">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" name="keyword" class="form-control border-start-0" 
+                                   placeholder="Search companies by name or industry..." th:value="${keyword}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-purple w-100">Search</button>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <button type="button" class="btn btn-purple" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+                            <i class="bi bi-plus-lg me-1"></i> Add Company
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Companies Grid -->
+        <div class="row g-4">
+            <div class="col-md-4 col-sm-6" th:each="comp : ${companies}">
+                <div class="card-saas h-100">
+                    <div class="card-body-clean">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="stat-icon purple" style="width: 44px; height: 44px; font-size: 1.1rem;">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <div class="d-flex align-items-center gap-1 text-warning small fw-bold">
+                                <i class="bi bi-star-fill"></i>
+                                <span th:text="${comp.rating != null ? comp.rating : '4.0'}">4.0</span>
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold text-dark mb-1" th:text="${comp.name}">Google</h5>
+                        <div class="badge bg-purple-light text-purple mb-2" th:text="${comp.industry != null ? comp.industry : 'Technology'}">Tech</div>
+
+                        <p class="small text-muted mb-3" th:if="${comp.location != null}">
+                            <i class="bi bi-geo-alt me-1"></i><span th:text="${comp.location}">Mountain View, CA</span>
+                        </p>
+
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <a th:if="${comp.website != null and !comp.website.isEmpty()}" 
+                               th:href="${comp.website}" target="_blank" class="small text-purple text-decoration-none fw-semibold">
+                                <i class="bi bi-box-arrow-up-right me-1"></i>Careers Page
+                            </a>
+                            <span th:unless="${comp.website != null and !comp.website.isEmpty()}" class="small text-muted">No website</span>
+
+                            <a th:href="@{'/companies/delete/' + ${comp.id}}" class="btn btn-sm btn-light text-danger" 
+                               onclick="return confirm('Remove this company?');">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Company Modal -->
+        <div class="modal fade" id="addCompanyModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content rounded-4 border-0">
+                    <div class="modal-header border-bottom">
+                        <h5 class="modal-title fw-bold">Add Target Company</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form th:action="@{/companies/save}" th:object="${newCompany}" method="post">
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Company Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" th:field="*{name}" placeholder="e.g. Oracle, Apple, Stripe" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Industry / Sector</label>
+                                <input type="text" class="form-control" th:field="*{industry}" placeholder="e.g. Cloud, FinTech, E-Commerce">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Location / Office</label>
+                                <input type="text" class="form-control" th:field="*{location}" placeholder="e.g. Austin, TX / Remote">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Careers Website</label>
+                                <input type="url" class="form-control" th:field="*{website}" placeholder="https://company.com/careers">
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-purple">Save Company</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::content}, ~{::title}, ~{::pageHeading})}">
+<head>
+    <title>Applications - CareerPulse</title>
+</head>
+<body>
+    <div th:fragment="pageHeading">
+        <span class="fw-bold">Job Applications</span>
+    </div>
+
+    <div th:fragment="content">
+        <!-- Control Header & Filters -->
+        <div class="card-saas mb-4">
+            <div class="card-body-clean">
+                <form th:action="@{/applications}" method="get" class="row g-3 align-items-center">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" name="keyword" class="form-control border-start-0" 
+                                   placeholder="Search by company, role, or location..." th:value="${keyword}">
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <select name="status" class="form-select">
+                            <option value="">All Application Statuses</option>
+                            <option th:each="st : ${statuses}" 
+                                    th:value="${st}" 
+                                    th:text="${st.displayName}" 
+                                    th:selected="${selectedStatus == st}">Status</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-purple w-100">Filter</button>
+                        <a th:href="@{/applications}" class="btn btn-outline-secondary">Reset</a>
+                    </div>
+
+                    <div class="col-md-2 text-end">
+                        <div class="btn-group" role="group">
+                            <a th:href="@{/applications}" class="btn btn-purple active" data-bs-toggle="tooltip" title="Table View">
+                                <i class="bi bi-list-ul"></i>
+                            </a>
+                            <a th:href="@{/applications/kanban}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Kanban Board View">
+                                <i class="bi bi-kanban"></i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Applications Table -->
+        <div class="card-saas">
+            <div class="card-header-clean">
+                <div class="d-flex align-items-center gap-2">
+                    <h6 class="mb-0 fw-bold">All Tracked Positions</h6>
+                    <span class="badge bg-purple-light text-purple rounded-pill" th:text="${#lists.size(applications)} + ' records'">6 records</span>
+                </div>
+                <a th:href="@{/applications/new}" class="btn btn-purple btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i> New Application
+                </a>
+            </div>
+            <div class="card-body-clean p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Company</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Location</th>
+                                <th>Salary Range</th>
+                                <th>Applied Date</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(applications)}">
+                                <td colspan="7" class="text-center p-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2 text-muted"></i>
+                                    No job applications match your query. Click "New Application" to add one!
+                                </td>
+                            </tr>
+                            <tr th:each="app : ${applications}">
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark" th:text="${app.companyName}">Company Name</div>
+                                    <a th:if="${app.jobLink != null and !app.jobLink.isEmpty()}" 
+                                       th:href="${app.jobLink}" target="_blank" class="small text-muted text-decoration-none">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i>Job Posting
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold text-dark" th:text="${app.jobRole}">Job Role</span>
+                                </td>
+                                <td>
+                                    <span class="badge-status" th:classappend="${app.status.cssClass}" th:text="${app.status.displayName}">Status</span>
+                                </td>
+                                <td class="small text-muted" th:text="${app.location != null ? app.location : 'Not Specified'}">Location</td>
+                                <td class="small fw-semibold text-dark" th:text="${app.salaryRange != null ? app.salaryRange : '-'}">$120k - $150k</td>
+                                <td class="small" th:text="${#temporals.format(app.applicationDate, 'dd MMM yyyy')}">Date</td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group btn-group-sm">
+                                        <a th:href="@{'/applications/' + ${app.id}}" class="btn btn-light" data-bs-toggle="tooltip" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a th:href="@{'/applications/edit/' + ${app.id}}" class="btn btn-light" data-bs-toggle="tooltip" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:href="@{'/applications/delete/' + ${app.id}}" 
+                                           class="btn btn-light text-danger" 
+                                           onclick="return confirm('Are you sure you want to delete this application?');"
+                                           data-bs-toggle="tooltip" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

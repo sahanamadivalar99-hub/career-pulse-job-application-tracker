@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::content}, ~{::title}, ~{::pageHeading})}">
+<head>
+    <title>AI Resume Analyzer - CareerPulse</title>
+</head>
+<body>
+    <div th:fragment="pageHeading">
+        <span class="fw-bold">AI Resume Analyzer</span>
+    </div>
+
+    <div th:fragment="content">
+        <!-- 1. PDF Upload Hero Area -->
+        <div class="card-saas mb-4 border-2 border-purple-subtle bg-purple-light">
+            <div class="card-body-clean p-4">
+                <div class="row align-items-center">
+                    <div class="col-lg-7">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-purple text-white px-2 py-1">Apache PDFBox Engine</span>
+                            <span class="badge bg-white text-purple border">Java 21 NLP</span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1">Evaluate Your Resume with Intelligent ATS Scoring</h4>
+                        <p class="text-muted mb-3">
+                            Upload your PDF resume to extract text using Apache PDFBox, calculate an objective ATS compatibility score (0-100), identify technical and soft skill gaps, and receive concrete recommendations.
+                        </p>
+                    </div>
+
+                    <div class="col-lg-5">
+                        <form th:action="@{/resume-analyzer/upload}" method="post" enctype="multipart/form-data" class="p-3 bg-white rounded-3 shadow-sm border">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-dark small">Select PDF Resume (.pdf)</label>
+                                <input type="file" name="resumeFile" class="form-control" accept="application/pdf" required>
+                                <div class="form-text text-muted">Supports valid PDF files up to 15MB.</div>
+                            </div>
+                            <button type="submit" class="btn btn-purple w-100 fw-bold">
+                                <i class="bi bi-cloud-arrow-up-fill me-2"></i> Upload & Run Analysis
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Active Analysis Display -->
+        <div th:if="${analysis != null}">
+            <!-- Score & Top Overview Banner -->
+            <div class="card-saas mb-4">
+                <div class="card-body-clean">
+                    <div class="row align-items-center g-4">
+                        <div class="col-md-3 text-center border-end">
+                            <div class="ats-score-badge mx-auto mb-2">
+                                <div class="ats-score-number" th:text="${analysis.atsScore}">78</div>
+                                <div class="ats-score-label">ATS Score</div>
+                            </div>
+                            <div class="fw-bold text-dark" th:text="${analysis.atsScore >= 75 ? 'ATS Optimized' : (analysis.atsScore >= 50 ? 'Moderate Compatibility' : 'Needs Optimization')}">ATS Optimized</div>
+                            <div class="small text-muted" th:text="${analysis.wordCount} + ' total words parsed'">420 words</div>
+                        </div>
+
+                        <div class="col-md-9">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                        <h5 class="fw-bold text-dark mb-0" th:text="${currentResume.originalFileName}">Sahana_Resume.pdf</h5>
+                                        <span th:if="${#strings.contains(currentResume.originalFileName, 'Sahana_Fresher') or #strings.contains(currentResume.originalFileName, 'sample')}" 
+                                              class="badge bg-purple-light text-purple">
+                                            <i class="bi bi-info-circle me-1"></i> Demonstration Fresher Profile (Bengaluru)
+                                        </span>
+                                    </div>
+                                    <div class="small text-muted">
+                                        Uploaded on <span th:text="${#temporals.format(currentResume.uploadDate, 'dd MMM yyyy, hh:mm a')}">Date</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a th:href="@{/job-matcher}" class="btn btn-purple-light btn-sm">
+                                        <i class="bi bi-crosshair me-1"></i> Match with Job Description
+                                    </a>
+                                    <a th:href="@{'/resume-analyzer/delete/' + ${currentResume.id}}" 
+                                       class="btn btn-outline-danger btn-sm"
+                                       onclick="return confirm('Delete this resume and its analysis?');">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Transparent Scoring Breakdown -->
+                            <h6 class="fw-bold text-dark small text-uppercase mb-2">Scoring Mechanism Breakdown</h6>
+                            <div class="row g-2 text-center">
+                                <div class="col" th:each="entry : ${analysis.scoreBreakdown}">
+                                    <div class="p-2 rounded bg-light border">
+                                        <div class="small text-muted text-truncate" th:text="${entry.key}">Sections</div>
+                                        <div class="fw-bold text-purple" th:text="${entry.value} + ' pts'">25 pts</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills Analysis: Technical, Soft, and Missing -->
+            <div class="row g-4 mb-4">
+                <!-- Identified Technical Skills -->
+                <div class="col-lg-4">
+                    <div class="card-saas h-100">
+                        <div class="card-header-clean">
+                            <h6 class="mb-0 fw-bold text-dark">
+                                <i class="bi bi-code-slash text-success me-2"></i> Technical Skills Identified
+                            </h6>
+                            <span class="badge bg-success-subtle text-success fw-bold" th:text="${#lists.size(analysis.technicalSkillsIdentified)}">4</span>
+                        </div>
+                        <div class="card-body-clean">
+                            <div class="d-flex flex-wrap">
+                                <span class="skill-tag matched" th:each="skill : ${analysis.technicalSkillsIdentified}">
+                                    <i class="bi bi-check2 me-1"></i><span th:text="${skill}">Java</span>
+                                </span>
+                                <span class="text-muted small" th:if="${#lists.isEmpty(analysis.technicalSkillsIdentified)}">
+                                    No technical keywords detected from standard categories.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Missing Skills to Improve -->
+                <div class="col-lg-4">
+                    <div class="card-saas h-100 border-danger-subtle">
+                        <div class="card-header-clean">
+                            <h6 class="mb-0 fw-bold text-danger">
+                                <i class="bi bi-exclamation-octagon text-danger me-2"></i> Skills to Improve
+                            </h6>
+                            <span class="badge bg-danger-subtle text-danger fw-bold" th:text="${#lists.size(analysis.missingSkills)}">4</span>
+                        </div>
+                        <div class="card-body-clean">
+                            <div class="d-flex flex-wrap">
+                                <span class="skill-tag missing" th:each="skill : ${analysis.missingSkills}">
+                                    <i class="bi bi-plus me-1"></i><span th:text="${skill}">Spring Boot</span>
+                                </span>
+                            </div>
+                            <div class="small text-muted mt-2">
+                                <i class="bi bi-info-circle me-1"></i> Adding these high-demand keywords enhances ATS match rates for Java engineering roles.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soft Skills Identified -->
+                <div class="col-lg-4">
+                    <div class="card-saas h-100">
+                        <div class="card-header-clean">
+                            <h6 class="mb-0 fw-bold text-dark">
+                                <i class="bi bi-people-fill text-purple me-2"></i> Soft Skills Identified
+                            </h6>
+                            <span class="badge bg-purple-subtle text-purple fw-bold" th:text="${#lists.size(analysis.softSkillsIdentified)}">3</span>
+                        </div>
+                        <div class="card-body-clean">
+                            <div class="d-flex flex-wrap">
+                                <span class="skill-tag neutral" th:each="skill : ${analysis.softSkillsIdentified}">
+                                    <i class="bi bi-chat-heart me-1"></i><span th:text="${skill}">Team Collaboration</span>
+                                </span>
+                                <span class="text-muted small" th:if="${#lists.isEmpty(analysis.softSkillsIdentified)}">
+                                    No soft skill keywords detected. Highlight collaboration and leadership.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resume Sections & Detailed Suggestions -->
+            <div class="row g-4 mb-4">
+                <!-- Section Checklist & Structure -->
+                <div class="col-lg-5">
+                    <div class="card-saas h-100">
+                        <div class="card-header-clean">
+                            <h6 class="mb-0 fw-bold text-dark">
+                                <i class="bi bi-layout-text-window-reverse text-purple me-2"></i> Resume Structure & Sections
+                            </h6>
+                        </div>
+                        <div class="card-body-clean">
+                            <ul class="list-group list-group-flush mb-3">
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <span><i class="bi bi-envelope-at me-2 text-primary"></i> Contact Info (Email / Phone)</span>
+                                    <span th:if="${analysis.contactInfoPresent}" class="badge bg-success-subtle text-success"><i class="bi bi-check-lg"></i> Present</span>
+                                    <span th:unless="${analysis.contactInfoPresent}" class="badge bg-danger-subtle text-danger"><i class="bi bi-x-lg"></i> Missing</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0" th:each="sec : ${analysis.presentSections}">
+                                    <span><i class="bi bi-check-circle-fill me-2 text-success"></i> <span th:text="${sec}">Education</span></span>
+                                    <span class="badge bg-success-subtle text-success">Detected</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0" th:each="sec : ${analysis.missingSections}">
+                                    <span><i class="bi bi-exclamation-circle-fill me-2 text-warning"></i> <span th:text="${sec}">Certifications</span></span>
+                                    <span class="badge bg-warning-subtle text-warning">Missing Section</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Summary & Project Improvement Suggestions -->
+                <div class="col-lg-7">
+                    <div class="card-saas h-100">
+                        <div class="card-header-clean">
+                            <h6 class="mb-0 fw-bold text-dark">
+                                <i class="bi bi-lightbulb-fill text-warning me-2"></i> Actionable Improvement Suggestions
+                            </h6>
+                        </div>
+                        <div class="card-body-clean">
+                            <!-- Professional Summary Recommendation -->
+                            <div class="mb-3 p-3 bg-light rounded border">
+                                <h6 class="fw-bold text-dark small text-uppercase mb-1">
+                                    <i class="bi bi-chat-square-quote me-1 text-purple"></i> Professional Summary Recommendation
+                                </h6>
+                                <p class="small text-muted mb-0" th:text="${analysis.summarySuggestions}">
+                                    Add a targeted 3-4 line summary highlighting Java and Spring Boot experience.
+                                </p>
+                            </div>
+
+                            <!-- Project Suggestions -->
+                            <div class="mb-3">
+                                <h6 class="fw-bold text-dark small text-uppercase mb-2">
+                                    <i class="bi bi-folder-check me-1 text-purple"></i> Project Improvement Suggestions
+                                </h6>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item px-0 py-1 border-0 small text-dark d-flex gap-2" th:each="sug : ${analysis.projectSuggestions}">
+                                        <i class="bi bi-arrow-right-short text-purple fs-5"></i>
+                                        <span th:text="${sug}">Suggestion</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Certification Recommendations -->
+                            <div class="mb-3">
+                                <h6 class="fw-bold text-dark small text-uppercase mb-2">
+                                    <i class="bi bi-award-fill me-1 text-warning"></i> Recommended Industry Certifications
+                                </h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="badge bg-light text-dark border p-2" th:each="cert : ${analysis.certificationRecommendations}">
+                                        <i class="bi bi-patch-check-fill text-primary me-1"></i><span th:text="${cert}">Oracle Java</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Formatting Suggestions -->
+                            <div>
+                                <h6 class="fw-bold text-dark small text-uppercase mb-2">
+                                    <i class="bi bi-card-checklist me-1 text-info"></i> Formatting & Readability Guidelines
+                                </h6>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item px-0 py-1 border-0 small text-muted d-flex gap-2" th:each="f : ${analysis.formattingSuggestions}">
+                                        <i class="bi bi-dash text-secondary"></i>
+                                        <span th:text="${f}">Formatting rule</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Extracted Text Raw Accordion -->
+            <div class="accordion mb-4" id="resumeTextAccordion">
+                <div class="accordion-item border rounded-3">
+                    <h2 class="accordion-header" id="headingText">
+                        <button class="accordion-button collapsed fw-bold text-dark bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseText" aria-expanded="false" aria-controls="collapseText">
+                            <i class="bi bi-file-text me-2 text-purple"></i> View Extracted Text (Parsed via Apache PDFBox)
+                        </button>
+                    </h2>
+                    <div id="collapseText" class="accordion-collapse collapse" aria-labelledby="headingText" data-bs-parent="#resumeTextAccordion">
+                        <div class="accordion-body">
+                            <pre class="p-3 bg-light rounded text-dark small mb-0" style="white-space: pre-wrap;" th:text="${currentResume.extractedText}">Text</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:unless="${analysis != null}" class="p-5 text-center bg-white rounded-3 border">
+            <i class="bi bi-file-earmark-arrow-up fs-1 text-purple mb-3 d-block"></i>
+            <h5 class="fw-bold">No Resume Analyzed Yet</h5>
+            <p class="text-muted">Upload your PDF resume above to see your ATS Score and complete skill gap analysis.</p>
+        </div>
+    </div>
+</body>
+</html>

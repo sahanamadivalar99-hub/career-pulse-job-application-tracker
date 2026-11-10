@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::content}, ~{::title}, ~{::pageHeading})}">
+<head>
+    <title>Job Description Matcher - CareerPulse</title>
+</head>
+<body>
+    <div th:fragment="pageHeading">
+        <span class="fw-bold">Job Description Matcher</span>
+    </div>
+
+    <div th:fragment="content">
+        <!-- Input Form Section -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-5">
+                <div class="card-saas h-100">
+                    <div class="card-header-clean">
+                        <h6 class="mb-0 fw-bold text-dark">
+                            <i class="bi bi-file-earmark-text-fill text-purple me-2"></i> Compare Resume vs Job Description
+                        </h6>
+                    </div>
+                    <div class="card-body-clean">
+                        <!-- Quick Bengaluru Job Preset Selector -->
+                        <div class="mb-3 p-3 bg-purple-light rounded border border-purple-subtle">
+                            <label class="form-label fw-bold small text-purple mb-2">
+                                <i class="bi bi-geo-alt-fill me-1"></i> Quick Demo: Load Bengaluru Job Descriptions
+                            </label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-sm btn-white border text-dark fw-semibold" onclick="loadJobPreset('java')">
+                                    <i class="bi bi-file-code me-1 text-purple"></i> Java Intern
+                                </button>
+                                <button type="button" class="btn btn-sm btn-white border text-dark fw-semibold" onclick="loadJobPreset('swe')">
+                                    <i class="bi bi-laptop me-1 text-primary"></i> SWE Intern
+                                </button>
+                                <button type="button" class="btn btn-sm btn-white border text-dark fw-semibold" onclick="loadJobPreset('aiml')">
+                                    <i class="bi bi-cpu me-1 text-success"></i> AI/ML Intern
+                                </button>
+                                <button type="button" class="btn btn-sm btn-white border text-dark fw-semibold" onclick="loadJobPreset('data')">
+                                    <i class="bi bi-bar-chart me-1 text-warning"></i> Data Analyst
+                                </button>
+                            </div>
+                        </div>
+
+                        <form th:action="@{/job-matcher/match}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Select Resume</label>
+                                <select name="resumeId" class="form-select" required>
+                                    <option th:each="r : ${resumes}" 
+                                            th:value="${r.id}" 
+                                            th:text="${r.originalFileName + ' (Uploaded: ' + #temporals.format(r.uploadDate, 'dd MMM') + ')'}"
+                                            th:selected="${selectedResumeId == r.id}">Sahana_Resume.pdf</option>
+                                </select>
+                                <div class="form-text">
+                                    Need to test a new resume? <a th:href="@{/resume-analyzer}">Upload in Resume Analyzer</a>.
+                                </div>
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold small">Job Title</label>
+                                    <input type="text" id="jobTitleInput" name="jobTitle" class="form-control" placeholder="e.g. Java Engineer" th:value="${jobTitle}">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold small">Target Company</label>
+                                    <input type="text" id="companyNameInput" name="companyName" class="form-control" placeholder="e.g. Google" th:value="${companyName}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Paste Job Description <span class="text-danger">*</span></label>
+                                <textarea id="jobDescriptionInput" name="jobDescription" class="form-control" rows="8" 
+                                          placeholder="Paste requirements, required technical skills, qualifications from the job posting..." required th:text="${jobDescription}"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-purple w-100 fw-bold">
+                                <i class="bi bi-lightning-charge-fill me-1"></i> Calculate Job Match
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Results Section -->
+            <div class="col-lg-7">
+                <div th:if="${matchResult != null}">
+                    <!-- Match Score Card -->
+                    <div class="card-saas mb-4">
+                        <div class="card-body-clean p-4">
+                            <div class="row align-items-center">
+                                <div class="col-sm-4 text-center border-end">
+                                    <div class="ats-score-badge mx-auto mb-2" 
+                                         th:style="'border-color: ' + (${matchResult.matchPercentage >= 70} ? '#10B981' : (${matchResult.matchPercentage >= 50} ? '#F59E0B' : '#EF4444'))">
+                                        <div class="ats-score-number" 
+                                             th:style="'color: ' + (${matchResult.matchPercentage >= 70} ? '#10B981' : (${matchResult.matchPercentage >= 50} ? '#F59E0B' : '#EF4444'))"
+                                             th:text="${matchResult.matchPercentage + '%'}">72%</div>
+                                        <div class="ats-score-label">Job Match</div>
+                                    </div>
+                                    <span class="badge" 
+                                          th:classappend="${matchResult.matchPercentage >= 70 ? 'bg-success' : (matchResult.matchPercentage >= 50 ? 'bg-warning text-dark' : 'bg-danger')}" 
+                                          th:text="${matchResult.matchGrade}">Good Match</span>
+                                </div>
+
+                                <div class="col-sm-8 ps-sm-4">
+                                    <h5 class="fw-bold text-dark mb-1" th:text="${matchResult.jobTitle}">Target Role</h5>
+                                    <div class="text-muted small mb-3">At <strong th:text="${matchResult.companyName}">Company</strong></div>
+                                    
+                                    <p class="small text-muted mb-0">
+                                        Your resume has an estimated <strong th:text="${matchResult.matchPercentage + '%'}">72%</strong> alignment with the job description keywords and technical proficiencies. Review the gap analysis below.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills Comparison Rows -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="card-saas h-100">
+                                <div class="card-header-clean">
+                                    <h6 class="mb-0 fw-bold text-success">
+                                        <i class="bi bi-check-circle-fill me-2"></i> Matching Skills (<span th:text="${#lists.size(matchResult.matchingSkills)}">3</span>)
+                                    </h6>
+                                </div>
+                                <div class="card-body-clean">
+                                    <div class="d-flex flex-wrap">
+                                        <span class="skill-tag matched" th:each="ms : ${matchResult.matchingSkills}">
+                                            <i class="bi bi-check-lg me-1"></i><span th:text="${ms}">Java</span>
+                                        </span>
+                                        <span class="text-muted small" th:if="${#lists.isEmpty(matchResult.matchingSkills)}">
+                                            No explicit keyword matches found.
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card-saas h-100 border-danger-subtle">
+                                <div class="card-header-clean">
+                                    <h6 class="mb-0 fw-bold text-danger">
+                                        <i class="bi bi-x-circle-fill me-2"></i> Missing Skills (<span th:text="${#lists.size(matchResult.missingSkills)}">3</span>)
+                                    </h6>
+                                </div>
+                                <div class="card-body-clean">
+                                    <div class="d-flex flex-wrap">
+                                        <span class="skill-tag missing" th:each="ms : ${matchResult.missingSkills}">
+                                            <i class="bi bi-plus-lg me-1"></i><span th:text="${ms}">Spring Boot</span>
+                                        </span>
+                                        <span class="text-success small" th:if="${#lists.isEmpty(matchResult.missingSkills)}">
+                                            Awesome! You have matched all required skills!
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations to improve the match -->
+                    <div class="card-saas">
+                        <div class="card-header-clean">
+                            <h6 class="mb-0 fw-bold text-dark">
+                                <i class="bi bi-lightning-fill text-warning me-2"></i> Recommendations to Improve Match
+                            </h6>
+                        </div>
+                        <div class="card-body-clean">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item px-0 py-2 border-0 small text-dark d-flex gap-2" th:each="rec : ${matchResult.recommendations}">
+                                    <i class="bi bi-arrow-right-circle-fill text-purple"></i>
+                                    <span th:text="${rec}">Recommendation text</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:unless="${matchResult != null}" class="p-5 text-center bg-white rounded-3 border h-100 d-flex flex-column align-items-center justify-content-center">
+                    <i class="bi bi-sliders fs-1 text-purple mb-3"></i>
+                    <h5 class="fw-bold">No Job Description Analyzed Yet</h5>
+                    <p class="text-muted mb-0" style="max-width: 400px;">
+                        Paste any target job description on the left and select your resume to see matching skills, missing keywords, and tailor-made advice.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bengaluru Demo Job Presets Script -->
+        <script>
+            function loadJobPreset(type) {
+                const titleInput = document.getElementById('jobTitleInput');
+                const companyInput = document.getElementById('companyNameInput');
+                const descInput = document.getElementById('jobDescriptionInput');
+
+                const presets = {
+                    'java': {
+                        title: 'Java Developer Intern',
+                        company: 'Infosys / PhonePe (Bengaluru)',
+                        desc: 'We are seeking an ambitious Java Developer Intern to join our engineering hub in Bengaluru, Karnataka.\n\nKey Responsibilities:\n- Design, develop, and test backend REST APIs using Java and modern frameworks.\n- Collaborate on relational database design, writing optimized SQL queries in MySQL/PostgreSQL.\n- Participate in code reviews, unit testing, and agile sprints.\n\nQualifications & Requirements:\n- Solid proficiency in Java and Object-Oriented Programming (OOP) concepts.\n- Understanding of Data Structures, Algorithms, and clean code practices.\n- Exposure to Spring Boot, REST APIs, Git, and GitHub.\n- Web fundamentals: HTML, CSS, JavaScript.\n- Strong problem-solving, communication, and learning agility.'
+                    },
+                    'swe': {
+                        title: 'Software Engineer Intern',
+                        company: 'Google / Flipkart (Bengaluru)',
+                        desc: 'Google / Flipkart Bengaluru is seeking top talent for our Software Engineering Internship program.\n\nRole Overview:\n- Build scalable components for high-throughput distributed commerce/cloud platforms.\n- Solve complex data structure and algorithmic challenges.\n\nRequirements:\n- Strong problem-solving proficiency in Java, C, C++, or Python.\n- Deep understanding of Data Structures, Algorithms, Complexity Analysis, and SQL.\n- Excellent analytical reasoning and collaboration skills.\n- Knowledge of version control (Git) and computer science fundamentals.'
+                    },
+                    'aiml': {
+                        title: 'AI/ML Intern',
+                        company: 'Amazon AWS (Bengaluru)',
+                        desc: 'Amazon AWS Bengaluru is hiring an AI/ML Intern to contribute to cutting-edge cloud intelligence initiatives.\n\nKey Responsibilities:\n- Assist in developing machine learning models and data processing pipelines.\n- Work with Python, SQL, and data transformation libraries.\n\nQualifications:\n- Strong programming fundamentals in Python and Object-Oriented concepts.\n- Foundational knowledge of Machine Learning algorithms, Data Structures, and linear algebra.\n- Familiarity with SQL databases and cloud platforms (AWS).\n- Enthusiasm for generative AI, NLP, and model evaluation.'
+                    },
+                    'data': {
+                        title: 'Data Analyst Intern',
+                        company: 'Wipro (Bengaluru)',
+                        desc: 'Wipro Technologies Bengaluru is looking for a Data Analyst Intern.\n\nKey Responsibilities:\n- Write complex SQL queries to extract, transform, and aggregate business metrics from relational databases.\n- Clean and manipulate structured datasets using Python and Excel.\n- Build visualizations and present data insights to engineering teams.\n\nRequirements:\n- Strong working knowledge of SQL, Relational Database Management Systems, and Python.\n- Analytical thinking, data visualization skills, and attention to detail.'
+                    }
+                };
+
+                const selected = presets[type];
+                if (selected) {
+                    if (titleInput) titleInput.value = selected.title;
+                    if (companyInput) companyInput.value = selected.company;
+                    if (descInput) descInput.value = selected.desc;
+                }
+            }
+        </script>
+    </div>
+</body>
+</html>

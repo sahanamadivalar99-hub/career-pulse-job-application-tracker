@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::content}, ~{::title}, ~{::pageHeading})}">
+<head>
+    <title th:text="${app.companyName + ' - ' + app.jobRole}">Application Details</title>
+</head>
+<body>
+    <div th:fragment="pageHeading">
+        <span class="fw-bold">Application Details</span>
+    </div>
+
+    <div th:fragment="content">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="card-saas mb-4">
+                    <div class="card-header-clean">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon purple" style="width: 44px; height: 44px;">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0 fw-bold text-dark" th:text="${app.companyName}">Google</h5>
+                                <div class="text-muted small" th:text="${app.jobRole}">Java Backend Engineer</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a th:href="@{'/applications/edit/' + ${app.id}}" class="btn btn-purple-light btn-sm">
+                                <i class="bi bi-pencil me-1"></i> Edit
+                            </a>
+                            <a th:href="@{/applications}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-arrow-left me-1"></i> Back
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card-body-clean">
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-3">
+                                <div class="text-muted small fw-semibold">CURRENT STATUS</div>
+                                <div class="mt-1">
+                                    <span class="badge-status" th:classappend="${app.status.cssClass}" th:text="${app.status.displayName}">Applied</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small fw-semibold">APPLICATION DATE</div>
+                                <div class="fw-bold text-dark mt-1" th:text="${#temporals.format(app.applicationDate, 'dd MMMM yyyy')}">Date</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small fw-semibold">LOCATION</div>
+                                <div class="fw-bold text-dark mt-1" th:text="${app.location != null ? app.location : 'Not Specified'}">Location</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small fw-semibold">SALARY ESTIMATE</div>
+                                <div class="fw-bold text-purple mt-1" th:text="${app.salaryRange != null ? app.salaryRange : 'Not Listed'}">Salary</div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 mb-4 rounded bg-light border" th:if="${app.interviewDate != null}">
+                            <div class="d-flex align-items-center gap-2 text-warning fw-bold mb-1">
+                                <i class="bi bi-calendar-event-fill"></i>
+                                <span>Upcoming Interview Scheduled</span>
+                            </div>
+                            <div class="text-dark fw-semibold" th:text="${#temporals.format(app.interviewDate, 'EEEE, dd MMMM yyyy at hh:mm a')}">Date</div>
+                        </div>
+
+                        <div class="p-3 mb-4 rounded bg-purple-light border border-purple-subtle" th:if="${app.nextFollowUpDate != null}">
+                            <div class="d-flex align-items-center gap-2 text-purple fw-bold mb-1">
+                                <i class="bi bi-alarm-fill"></i>
+                                <span>Next Follow-up Scheduled</span>
+                            </div>
+                            <div class="text-dark fw-semibold" th:text="${#temporals.format(app.nextFollowUpDate, 'EEEE, dd MMMM yyyy')}">Date</div>
+                        </div>
+
+                        <div class="mb-4" th:if="${app.jobLink != null and !app.jobLink.isEmpty()}">
+                            <h6 class="fw-bold text-dark mb-2">Job Link</h6>
+                            <a th:href="${app.jobLink}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-box-arrow-up-right me-1"></i> Open External Job Listing
+                            </a>
+                        </div>
+
+                        <div class="mb-4" th:if="${app.jobDescription != null and !app.jobDescription.isEmpty()}">
+                            <h6 class="fw-bold text-dark mb-2">Job Description & Requirements</h6>
+                            <div class="p-3 rounded bg-light border text-secondary" style="white-space: pre-wrap;" th:text="${app.jobDescription}">Description</div>
+                            <div class="mt-2">
+                                <form th:action="@{/job-matcher/match}" method="post">
+                                    <input type="hidden" name="jobTitle" th:value="${app.jobRole}" />
+                                    <input type="hidden" name="companyName" th:value="${app.companyName}" />
+                                    <input type="hidden" name="jobDescription" th:value="${app.jobDescription}" />
+                                    <button type="submit" class="btn btn-purple btn-sm">
+                                        <i class="bi bi-lightning-charge-fill me-1"></i> Match Resume Against This Job
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" th:if="${app.notes != null and !app.notes.isEmpty()}">
+                            <h6 class="fw-bold text-dark mb-2">Candidate Notes</h6>
+                            <div class="p-3 rounded bg-purple-light border border-purple-subtle text-dark" style="white-space: pre-wrap;" th:text="${app.notes}">Notes</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

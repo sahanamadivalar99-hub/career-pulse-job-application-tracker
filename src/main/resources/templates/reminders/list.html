@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::content}, ~{::title}, ~{::pageHeading})}">
+<head>
+    <title>Reminders & Follow-Ups - CareerPulse</title>
+</head>
+<body>
+    <div th:fragment="pageHeading">
+        <span class="fw-bold">Interview & Application Reminders</span>
+    </div>
+
+    <div th:fragment="content">
+        <div class="row g-4">
+            <!-- Left: Add New Reminder -->
+            <div class="col-lg-4">
+                <div class="card-saas">
+                    <div class="card-header-clean">
+                        <h6 class="mb-0 fw-bold text-dark">
+                            <i class="bi bi-alarm text-purple me-2"></i> Schedule New Reminder
+                        </h6>
+                    </div>
+                    <div class="card-body-clean">
+                        <form th:action="@{/reminders/save}" th:object="${newReminder}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Reminder Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" th:field="*{title}" 
+                                       placeholder="e.g. Google System Design Screen" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Reminder Category <span class="text-danger">*</span></label>
+                                <select class="form-select" th:field="*{type}" required>
+                                    <option th:each="t : ${reminderTypes}" 
+                                            th:value="${t}" 
+                                            th:text="${t.displayName}">Interview</option>
+                                </select>
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold small">Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" th:field="*{reminderDate}" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold small">Time</label>
+                                    <input type="time" class="form-control" th:field="*{reminderTime}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Linked Application (Optional)</label>
+                                <select class="form-select" th:field="*{application}">
+                                    <option value="">-- None / General Task --</option>
+                                    <option th:each="app : ${applications}" 
+                                            th:value="${app.id}" 
+                                            th:text="${app.companyName + ' - ' + app.jobRole}">Google - Java Backend</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold small">Preparation Notes</label>
+                                <textarea class="form-control" th:field="*{notes}" rows="3" 
+                                          placeholder="Key topics to review, meeting link, contact info..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-purple w-100 fw-bold">
+                                <i class="bi bi-calendar-plus me-1"></i> Add Reminder
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Reminders List -->
+            <div class="col-lg-8">
+                <div class="card-saas">
+                    <div class="card-header-clean">
+                        <div class="d-flex align-items-center gap-2">
+                            <h6 class="mb-0 fw-bold text-dark">Upcoming Schedule</h6>
+                            <span class="badge bg-purple-light text-purple rounded-pill" th:text="${#lists.size(reminders)} + ' total'">3 total</span>
+                        </div>
+                    </div>
+                    <div class="card-body-clean p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4" style="width: 50px;">Done</th>
+                                        <th>Title & Details</th>
+                                        <th>Category</th>
+                                        <th>Scheduled Date</th>
+                                        <th class="text-end pe-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(reminders)}">
+                                        <td colspan="5" class="text-center p-5 text-muted">
+                                            <i class="bi bi-calendar2-check fs-1 d-block mb-2 text-muted"></i>
+                                            No reminders found. Create your first reminder on the left!
+                                        </td>
+                                    </tr>
+                                    <tr th:each="rem : ${reminders}" th:classappend="${rem.completed ? 'bg-light text-muted' : ''}">
+                                        <td class="ps-4">
+                                            <a th:href="@{'/reminders/toggle/' + ${rem.id}}" 
+                                               class="text-decoration-none fs-5"
+                                               th:classappend="${rem.completed ? 'text-success' : 'text-secondary'}">
+                                                <i class="bi" th:classappend="${rem.completed ? 'bi-check-circle-fill' : 'bi-circle'}"></i>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold" th:classappend="${rem.completed ? 'text-decoration-line-through text-muted' : 'text-dark'}" 
+                                                 th:text="${rem.title}">Title</div>
+                                            <div class="small text-muted" th:if="${rem.notes != null and !rem.notes.isEmpty()}" th:text="${rem.notes}">Notes</div>
+                                            <div class="small text-purple" th:if="${rem.application != null}">
+                                                <i class="bi bi-link-45deg"></i>
+                                                <span th:text="${rem.application.companyName + ' (' + rem.application.jobRole + ')'}">Company</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="bi me-1" th:classappend="${rem.type.icon + ' ' + rem.type.colorClass}"></i>
+                                                <span th:text="${rem.type.displayName}">Type</span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold small" th:text="${#temporals.format(rem.reminderDate, 'dd MMM yyyy')}">Date</div>
+                                            <div class="small text-muted" th:if="${rem.reminderTime != null}" th:text="${#temporals.format(rem.reminderTime, 'hh:mm a')}">Time</div>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <a th:href="@{'/reminders/delete/' + ${rem.id}}" 
+                                               class="btn btn-sm btn-light text-danger"
+                                               onclick="return confirm('Delete this reminder?');">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

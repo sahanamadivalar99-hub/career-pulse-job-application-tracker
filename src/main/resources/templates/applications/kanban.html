@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::content}, ~{::title}, ~{::pageHeading})}">
+<head>
+    <title>Kanban Board - CareerPulse</title>
+</head>
+<body>
+    <div th:fragment="pageHeading">
+        <span class="fw-bold">Applications Pipeline</span>
+    </div>
+
+    <div th:fragment="content">
+        <!-- Top Toolbar -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h5 class="fw-bold text-dark mb-0">Kanban Board</h5>
+                <p class="small text-muted mb-0">Drag and drop job cards between columns to update their interview and offer stages.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <div class="btn-group" role="group">
+                    <a th:href="@{/applications}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Table View">
+                        <i class="bi bi-list-ul"></i>
+                    </a>
+                    <a th:href="@{/applications/kanban}" class="btn btn-purple active" data-bs-toggle="tooltip" title="Kanban Board View">
+                        <i class="bi bi-kanban"></i>
+                    </a>
+                </div>
+                <a th:href="@{/applications/new}" class="btn btn-purple btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i> New Application
+                </a>
+            </div>
+        </div>
+
+        <!-- Kanban Board Container -->
+        <div class="kanban-board">
+            <!-- 1. APPLIED COLUMN -->
+            <div class="kanban-column" data-status="APPLIED">
+                <div class="kanban-column-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary rounded-circle p-1"></span>
+                        <span class="fw-bold text-dark">Applied</span>
+                    </div>
+                    <span class="badge bg-white text-dark shadow-sm column-count" th:text="${#lists.size(groupedApplications.get(T(com.tracker.model.ApplicationStatus).APPLIED))}">0</span>
+                </div>
+                <div class="kanban-cards-container flex-grow-1">
+                    <div class="kanban-card" draggable="true" th:each="app : ${groupedApplications.get(T(com.tracker.model.ApplicationStatus).APPLIED)}" th:data-id="${app.id}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge badge-applied small">Applied</span>
+                            <span class="text-muted small" th:text="${#temporals.format(app.applicationDate, 'dd MMM')}">01 Jan</span>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1" th:text="${app.companyName}">Google</h6>
+                        <div class="small text-muted mb-2" th:text="${app.jobRole}">Java Engineer</div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i><span th:text="${app.location != null ? app.location : 'Remote'}">Location</span></span>
+                            <a th:href="@{'/applications/' + ${app.id}}" class="btn btn-sm btn-link p-0 text-purple"><i class="bi bi-arrow-right-circle"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. IN REVIEW COLUMN -->
+            <div class="kanban-column" data-status="IN_REVIEW">
+                <div class="kanban-column-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-info rounded-circle p-1"></span>
+                        <span class="fw-bold text-dark">In Review</span>
+                    </div>
+                    <span class="badge bg-white text-dark shadow-sm column-count" th:text="${#lists.size(groupedApplications.get(T(com.tracker.model.ApplicationStatus).IN_REVIEW))}">0</span>
+                </div>
+                <div class="kanban-cards-container flex-grow-1">
+                    <div class="kanban-card" draggable="true" th:each="app : ${groupedApplications.get(T(com.tracker.model.ApplicationStatus).IN_REVIEW)}" th:data-id="${app.id}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge badge-review small">In Review</span>
+                            <span class="text-muted small" th:text="${#temporals.format(app.applicationDate, 'dd MMM')}">01 Jan</span>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1" th:text="${app.companyName}">Amazon</h6>
+                        <div class="small text-muted mb-2" th:text="${app.jobRole}">Backend SDE</div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i><span th:text="${app.location != null ? app.location : 'Remote'}">Location</span></span>
+                            <a th:href="@{'/applications/' + ${app.id}}" class="btn btn-sm btn-link p-0 text-purple"><i class="bi bi-arrow-right-circle"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. INTERVIEW COLUMN -->
+            <div class="kanban-column" data-status="INTERVIEW">
+                <div class="kanban-column-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-warning rounded-circle p-1"></span>
+                        <span class="fw-bold text-dark">Interview</span>
+                    </div>
+                    <span class="badge bg-white text-dark shadow-sm column-count" th:text="${#lists.size(groupedApplications.get(T(com.tracker.model.ApplicationStatus).INTERVIEW))}">0</span>
+                </div>
+                <div class="kanban-cards-container flex-grow-1">
+                    <div class="kanban-card" draggable="true" th:each="app : ${groupedApplications.get(T(com.tracker.model.ApplicationStatus).INTERVIEW)}" th:data-id="${app.id}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge badge-interview small">Interview</span>
+                            <span class="text-muted small" th:text="${#temporals.format(app.applicationDate, 'dd MMM')}">01 Jan</span>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1" th:text="${app.companyName}">Google</h6>
+                        <div class="small text-muted mb-2" th:text="${app.jobRole}">Java Backend</div>
+                        <div class="p-1 mb-2 bg-light rounded text-warning small" th:if="${app.interviewDate != null}">
+                            <i class="bi bi-alarm me-1"></i> <span th:text="${#temporals.format(app.interviewDate, 'dd MMM, hh:mm a')}">Date</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i><span th:text="${app.location != null ? app.location : 'Remote'}">Location</span></span>
+                            <a th:href="@{'/applications/' + ${app.id}}" class="btn btn-sm btn-link p-0 text-purple"><i class="bi bi-arrow-right-circle"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. OFFER COLUMN -->
+            <div class="kanban-column" data-status="OFFER">
+                <div class="kanban-column-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success rounded-circle p-1"></span>
+                        <span class="fw-bold text-dark">Offer</span>
+                    </div>
+                    <span class="badge bg-white text-dark shadow-sm column-count" th:text="${#lists.size(groupedApplications.get(T(com.tracker.model.ApplicationStatus).OFFER))}">0</span>
+                </div>
+                <div class="kanban-cards-container flex-grow-1">
+                    <div class="kanban-card" draggable="true" th:each="app : ${groupedApplications.get(T(com.tracker.model.ApplicationStatus).OFFER)}" th:data-id="${app.id}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge badge-offer small">Offer</span>
+                            <span class="text-muted small" th:text="${#temporals.format(app.applicationDate, 'dd MMM')}">01 Jan</span>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1" th:text="${app.companyName}">Microsoft</h6>
+                        <div class="small text-muted mb-2" th:text="${app.jobRole}">Full Stack Developer</div>
+                        <div class="small fw-bold text-success mb-2" th:if="${app.salaryRange != null}" th:text="${app.salaryRange}">$140k - $165k</div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i><span th:text="${app.location != null ? app.location : 'Remote'}">Location</span></span>
+                            <a th:href="@{'/applications/' + ${app.id}}" class="btn btn-sm btn-link p-0 text-purple"><i class="bi bi-arrow-right-circle"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. REJECTED COLUMN -->
+            <div class="kanban-column" data-status="REJECTED">
+                <div class="kanban-column-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-danger rounded-circle p-1"></span>
+                        <span class="fw-bold text-dark">Rejected</span>
+                    </div>
+                    <span class="badge bg-white text-dark shadow-sm column-count" th:text="${#lists.size(groupedApplications.get(T(com.tracker.model.ApplicationStatus).REJECTED))}">0</span>
+                </div>
+                <div class="kanban-cards-container flex-grow-1">
+                    <div class="kanban-card" draggable="true" th:each="app : ${groupedApplications.get(T(com.tracker.model.ApplicationStatus).REJECTED)}" th:data-id="${app.id}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge badge-rejected small">Rejected</span>
+                            <span class="text-muted small" th:text="${#temporals.format(app.applicationDate, 'dd MMM')}">01 Jan</span>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1" th:text="${app.companyName}">Uber</h6>
+                        <div class="small text-muted mb-2" th:text="${app.jobRole}">Infrastructure Engineer</div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i><span th:text="${app.location != null ? app.location : 'Remote'}">Location</span></span>
+                            <a th:href="@{'/applications/' + ${app.id}}" class="btn btn-sm btn-link p-0 text-purple"><i class="bi bi-arrow-right-circle"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/kanban.js}"></script>
+</body>
+</html>

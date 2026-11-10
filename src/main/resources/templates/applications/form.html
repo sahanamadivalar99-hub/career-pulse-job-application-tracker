@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::content}, ~{::title}, ~{::pageHeading})}">
+<head>
+    <title th:text="${application.id != null ? 'Edit Application' : 'New Application'}">Application Form</title>
+</head>
+<body>
+    <div th:fragment="pageHeading">
+        <span class="fw-bold" th:text="${application.id != null ? 'Edit Job Application' : 'Add New Job Application'}">Application Form</span>
+    </div>
+
+    <div th:fragment="content">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card-saas">
+                    <div class="card-header-clean">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-briefcase text-purple fs-5"></i>
+                            <h6 class="mb-0 fw-bold" th:text="${application.id != null ? 'Update Position Details' : 'Position Information'}">Position Details</h6>
+                        </div>
+                        <a th:href="@{/applications}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Back
+                        </a>
+                    </div>
+                    <div class="card-body-clean">
+                        <form th:action="@{/applications/save}" th:object="${application}" method="post">
+                            <input type="hidden" th:field="*{id}" />
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Company Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" th:field="*{companyName}" 
+                                           placeholder="e.g. Google, Amazon, Microsoft" required>
+                                    <div class="text-danger small" th:if="${#fields.hasErrors('companyName')}" th:errors="*{companyName}"></div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Job Role / Title <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" th:field="*{jobRole}" 
+                                           placeholder="e.g. Senior Java Backend Developer" required>
+                                    <div class="text-danger small" th:if="${#fields.hasErrors('jobRole')}" th:errors="*{jobRole}"></div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
+                                    <select class="form-select" th:field="*{status}" required>
+                                        <option th:each="st : ${statuses}" 
+                                                th:value="${st}" 
+                                                th:text="${st.displayName}">Applied</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Application Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" th:field="*{applicationDate}" required>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Location</label>
+                                    <input type="text" class="form-control" th:field="*{location}" 
+                                           placeholder="e.g. Bengaluru, Karnataka / Hybrid">
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Salary / Stipend Range</label>
+                                    <input type="text" class="form-control" th:field="*{salaryRange}" 
+                                           placeholder="e.g. ₹30,000 / month or ₹6.5 LPA">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Job Posting Link</label>
+                                    <input type="url" class="form-control" th:field="*{jobLink}" 
+                                           placeholder="https://company.com/careers/job-id">
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Interview Schedule (Optional)</label>
+                                    <input type="datetime-local" class="form-control" th:field="*{interviewDate}">
+                                    <div class="form-text">Triggers upcoming interview alerts on the dashboard.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Next Follow-up Date (Optional)</label>
+                                    <input type="date" class="form-control" th:field="*{nextFollowUpDate}">
+                                    <div class="form-text">Planned date to reach out to recruiter / HR.</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Job Description</label>
+                                <textarea class="form-control" th:field="*{jobDescription}" rows="4" 
+                                          placeholder="Paste job description or requirements summary here..."></textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Personal Notes & Next Steps</label>
+                                <textarea class="form-control" th:field="*{notes}" rows="3" 
+                                          placeholder="Recruiter contact, referral names, interview rounds, preparation checklist..."></textarea>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <a th:href="@{/applications}" class="btn btn-outline-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-purple px-4">
+                                    <i class="bi bi-check-circle me-1"></i> Save Application
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
