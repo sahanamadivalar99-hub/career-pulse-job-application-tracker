@@ -33,6 +33,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String email = (String) attributes.get("email");
         String name = (String) attributes.get("name");
+        String picture = (String) attributes.get("picture");
+        if (picture == null || picture.isBlank()) {
+            picture = (String) attributes.get("avatar_url");
+        }
 
         if (email == null || email.isBlank()) {
             log.error("Google OAuth2 login failed: email attribute missing from provider response.");
@@ -42,7 +46,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         email = email.trim().toLowerCase();
 
         // Save or load the user in the database
-        User user = userService.processOAuthPostLogin(email, name);
+        User user = userService.processOAuthPostLogin(email, name, picture);
         log.info("Google OAuth2 user '{}' successfully resolved/stored with ID {}.", email, user.getId());
 
         String userNameAttributeName = userRequest.getClientRegistration()

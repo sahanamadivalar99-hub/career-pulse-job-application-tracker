@@ -32,32 +32,35 @@ public class User {
     @Column(name = "enabled")
     private Boolean enabled = true;
 
-    @Column(name = "reset_token")
+    @Column(name = "reset_token", length = 1000)
     private String resetToken;
 
     @Column(name = "reset_token_expiry")
     private LocalDateTime resetTokenExpiry;
 
-    @Column(name = "target_role")
+    @Column(name = "target_role", length = 1000)
     private String targetRole;
 
-    @Column(name = "location")
+    @Column(name = "location", length = 1000)
     private String location = "Bengaluru, Karnataka, India";
 
-    @Column(name = "education")
+    @Column(name = "education", length = 1000)
     private String education = "B.E. Engineering Student";
 
-    @Column(name = "experience")
+    @Column(name = "experience", length = 1000)
     private String experience = "Fresher";
 
-    @Column(name = "preferred_location")
+    @Column(name = "preferred_location", length = 1000)
     private String preferredLocation = "Bengaluru";
 
-    @Column(name = "preferred_employment")
+    @Column(name = "preferred_employment", length = 1000)
     private String preferredEmployment = "Internship and Full-Time";
 
-    @Column(name = "gemini_api_key")
+    @Column(name = "gemini_api_key", length = 1000)
     private String geminiApiKey;
+
+    @Column(name = "profile_picture", length = 1000)
+    private String profilePicture;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -214,5 +217,21 @@ public class User {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+
+    public String getPicture() {
+        return profilePicture;
+    }
+
+    public void setPicture(String picture) {
+        this.profilePicture = picture;
     }
 }

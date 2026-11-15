@@ -62,28 +62,72 @@ public class UserService {
 
     /**
      * Saves or loads a user authenticated via Google OAuth2.
-     * If the user doesn't exist, automatically registers a new account.
+     * If the user exists, returns the existing record.
+     * If the user doesn't exist, safely generates a unique username, resolves name/picture fallbacks,
+     * sets an encoded placeholder password, and registers the account.
      */
     @Transactional
-    public User processOAuthPostLogin(String email, String name) {
+    public User processOAuthPostLogin(String email, String name, String picture) {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Email cannot be empty");
         }
         String cleanEmail = email.trim().toLowerCase();
-        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(cleanEmail);
+        String emailPrefix = cleanEmail.contains("@") ? cleanEmail.substring(0, cleanEmail.indexOf("@")) : cleanEmail;
+        String resolvedName = (name != null && !name.isBlank()) ? name.trim() : emailPrefix;
+
+        String resolvedPicture = null;
+        if (picture != null && !picture.isBlank()) {
+            resolvedPicture = picture.trim();
+            if (resolvedPicture.length() > 1000) {
+                resolvedPicture = resolvedPicture.substring(0, 1000);
+            }
+        }
+
+        // 1) Load existing user by email or username
+        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(cleanEmail)
+                .or(() -> userRepository.findByUsernameIgnoreCase(cleanEmail));
+
         if (userOpt.isPresent()) {
             User existingUser = userOpt.get();
-            if ((existingUser.getFullName() == null || existingUser.getFullName().isBlank()) && name != null && !name.isBlank()) {
-                existingUser.setFullName(name.trim());
-                return userRepository.save(existingUser);
+            boolean changed = false;
+            if ((existingUser.getFullName() == null || existingUser.getFullName().isBlank()) && !resolvedName.isBlank()) {
+                existingUser.setFullName(resolvedName);
+                changed = true;
             }
-            return existingUser;
+            if (resolvedPicture != null && !resolvedPicture.isBlank() &&
+                    (existingUser.getProfilePicture() == null || !resolvedPicture.equals(existingUser.getProfilePicture()))) {
+                existingUser.setProfilePicture(resolvedPicture);
+                changed = true;
+            }
+            if (existingUser.getPassword() == null || existingUser.getPassword().isBlank()) {
+                String randomSecret = UUID.randomUUID().toString();
+                existingUser.setPassword(passwordEncoder != null ? passwordEncoder.encode(randomSecret) : "{bcrypt}" + randomSecret);
+                changed = true;
+            }
+            return changed ? userRepository.save(existingUser) : existingUser;
+        }
+
+        // 2) Unique username generation
+        String baseUsername = emailPrefix.replaceAll("[^a-zA-Z0-9._-]", "");
+        if (baseUsername.isBlank()) {
+            baseUsername = "user";
+        }
+        String candidateUsername = baseUsername;
+        int suffix = 1;
+        while (userRepository.existsByUsernameIgnoreCase(candidateUsername) || userRepository.existsByEmailIgnoreCase(candidateUsername)) {
+            candidateUsername = baseUsername + suffix;
+            suffix++;
         }
 
         User newUser = new User();
         newUser.setEmail(cleanEmail);
-        newUser.setUsername(cleanEmail);
-        newUser.setFullName(name != null && !name.isBlank() ? name.trim() : cleanEmail.split("@")[0]);
+        newUser.setUsername(candidateUsername);
+        newUser.setFullName(resolvedName);
+        if (resolvedPicture != null) {
+            newUser.setProfilePicture(resolvedPicture);
+        }
+        String randomSecret = UUID.randomUUID().toString();
+        newUser.setPassword(passwordEncoder != null ? passwordEncoder.encode(randomSecret) : "{bcrypt}" + randomSecret);
         newUser.setRole("ROLE_USER");
         newUser.setEnabled(true);
         newUser.setLocation("Bengaluru, Karnataka, India");
@@ -93,7 +137,13 @@ public class UserService {
         newUser.setPreferredLocation("Bengaluru");
         newUser.setPreferredEmployment("Internship and Full-Time");
         newUser.setCreatedAt(LocalDateTime.now());
+
         return userRepository.save(newUser);
+    }
+
+    @Transactional
+    public User processOAuthPostLogin(String email, String name) {
+        return processOAuthPostLogin(email, name, null);
     }
 
     /**
