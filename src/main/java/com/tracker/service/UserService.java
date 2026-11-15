@@ -4,10 +4,12 @@ import com.tracker.dto.UserRegistrationDto;
 import com.tracker.model.User;
 import com.tracker.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,7 @@ public class UserService {
     private UserRepository userRepository;
 
     @Autowired
+    @Lazy
     private PasswordEncoder passwordEncoder;
 
     /**
@@ -31,6 +34,17 @@ public class UserService {
     public User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            // Check for OAuth2 authentication principal
+            if (auth.getPrincipal() instanceof OAuth2User oauth2User) {
+                String oauthEmail = oauth2User.getAttribute("email");
+                if (oauthEmail != null && !oauthEmail.isBlank()) {
+                    Optional<User> userOpt = userRepository.findByEmailIgnoreCase(oauthEmail.trim().toLowerCase());
+                    if (userOpt.isPresent()) {
+                        return userOpt.get();
+                    }
+                }
+            }
+
             String identifier = auth.getName();
             Optional<User> userOpt = userRepository.findByEmailIgnoreCase(identifier)
                     .or(() -> userRepository.findByUsernameIgnoreCase(identifier));
@@ -43,13 +57,43 @@ public class UserService {
         return userRepository.findByEmailIgnoreCase("sahana.bengaluru@example.com")
                 .or(() -> userRepository.findByUsername("developer"))
                 .or(() -> userRepository.findFirstByOrderByIdAsc())
-                .orElseGet(() -> {
-                    User defaultUser = new User("developer", "Sahana", "sahana.bengaluru@example.com", "Java Full Stack Developer / AI & Data Engineer");
-                    defaultUser.setPassword(passwordEncoder.encode("Sahana@123"));
-                    defaultUser.setRole("ROLE_USER");
-                    defaultUser.setEnabled(true);
-                    return userRepository.save(defaultUser);
-                });
+                .orElse(null);
+    }
+
+    /**
+     * Saves or loads a user authenticated via Google OAuth2.
+     * If the user doesn't exist, automatically registers a new account.
+     */
+    @Transactional
+    public User processOAuthPostLogin(String email, String name) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email cannot be empty");
+        }
+        String cleanEmail = email.trim().toLowerCase();
+        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(cleanEmail);
+        if (userOpt.isPresent()) {
+            User existingUser = userOpt.get();
+            if ((existingUser.getFullName() == null || existingUser.getFullName().isBlank()) && name != null && !name.isBlank()) {
+                existingUser.setFullName(name.trim());
+                return userRepository.save(existingUser);
+            }
+            return existingUser;
+        }
+
+        User newUser = new User();
+        newUser.setEmail(cleanEmail);
+        newUser.setUsername(cleanEmail);
+        newUser.setFullName(name != null && !name.isBlank() ? name.trim() : cleanEmail.split("@")[0]);
+        newUser.setRole("ROLE_USER");
+        newUser.setEnabled(true);
+        newUser.setLocation("Bengaluru, Karnataka, India");
+        newUser.setTargetRole("Java Full Stack Developer");
+        newUser.setEducation("B.E. Engineering Student");
+        newUser.setExperience("Fresher");
+        newUser.setPreferredLocation("Bengaluru");
+        newUser.setPreferredEmployment("Internship and Full-Time");
+        newUser.setCreatedAt(LocalDateTime.now());
+        return userRepository.save(newUser);
     }
 
     /**

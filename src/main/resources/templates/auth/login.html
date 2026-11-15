@@ -114,24 +114,57 @@
             box-shadow: 0 6px 18px rgba(124, 58, 237, 0.35);
         }
 
-        .demo-credential-box {
-            background-color: var(--purple-light);
-            border: 1px dashed var(--purple-border);
+        .btn-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            background-color: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            color: #374151;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.75rem 1rem;
             border-radius: 12px;
-            padding: 0.9rem;
-            font-size: 0.825rem;
-            margin-bottom: 1.5rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
-        .demo-badge {
-            background-color: var(--purple-subtle);
-            color: var(--primary-purple);
-            font-weight: 700;
-            padding: 0.2rem 0.5rem;
-            border-radius: 6px;
-            font-size: 0.725rem;
+        .btn-google:hover {
+            background-color: #F9FAFB;
+            border-color: #D1D5DB;
+            color: #111827;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.25rem 0;
+            color: #9CA3AF;
+            font-size: 0.8rem;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .auth-divider:not(:empty)::before {
+            margin-right: .75em;
+        }
+
+        .auth-divider:not(:empty)::after {
+            margin-left: .75em;
         }
     </style>
 </head>
@@ -161,23 +194,19 @@
             <button type="button" class="btn-close ms-auto p-2" data-bs-dismiss="alert"></button>
         </div>
 
-        <!-- Demo Account Banner -->
-        <div class="demo-credential-box d-flex align-items-start gap-2">
-            <i class="bi bi-info-circle-fill text-purple fs-5 mt-1" style="color: var(--primary-purple);"></i>
-            <div class="w-100">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="fw-bold text-dark">Default Demo Account</span>
-                    <span class="demo-badge">Bengaluru Candidate</span>
-                </div>
-                <div class="text-muted" style="line-height: 1.4;">
-                    Email: <code class="text-dark fw-bold">sahana.bengaluru@example.com</code><br>
-                    Password: <code class="text-dark fw-bold">Sahana@123</code>
-                </div>
-                <button type="button" id="fillDemoBtn" class="btn btn-sm btn-link p-0 text-decoration-none mt-1 fw-semibold" style="color: var(--primary-purple); font-size: 0.8rem;">
-                    <i class="bi bi-magic me-1"></i> Auto-fill demo credentials
-                </button>
-            </div>
-        </div>
+        <!-- Google OAuth2 Sign In -->
+        <a th:href="@{/oauth2/authorization/google}" class="btn-google">
+            <svg width="20" height="20" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            <span>Sign in with Google</span>
+        </a>
+
+        <!-- Divider -->
+        <div class="auth-divider">or sign in with email</div>
 
         <!-- Login Form -->
         <form th:action="@{/login}" method="post">
@@ -239,15 +268,6 @@
             passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
             toggleEyeIcon.classList.toggle('bi-eye');
             toggleEyeIcon.classList.toggle('bi-eye-slash');
-        });
-    }
-
-    // Auto fill demo button
-    const fillDemoBtn = document.getElementById('fillDemoBtn');
-    if (fillDemoBtn) {
-        fillDemoBtn.addEventListener('click', function() {
-            document.getElementById('email').value = 'sahana.bengaluru@example.com';
-            document.getElementById('password').value = 'Sahana@123';
         });
     }
 </script>

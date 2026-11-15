@@ -1,5 +1,6 @@
 package com.tracker.config;
 
+import com.tracker.security.CustomOAuth2UserService;
 import com.tracker.security.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -20,16 +21,17 @@ public class SecurityConfig {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    @Autowired
+    private CustomOAuth2UserService customOAuth2UserService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
 
@@ -48,6 +50,8 @@ public class SecurityConfig {
                     "/register",
                     "/forgot-password",
                     "/reset-password",
+                    "/oauth2/**",
+                    "/login/oauth2/**",
                     "/css/**",
                     "/js/**",
                     "/images/**",
@@ -64,6 +68,13 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/dashboard", true)
                 .failureUrl("/login?error=true")
                 .permitAll()
+            )
+            .oauth2Login(oauth -> oauth
+                .loginPage("/login")
+                .defaultSuccessUrl("/dashboard", true)
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOAuth2UserService)
+                )
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")

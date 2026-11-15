@@ -6,6 +6,7 @@ import com.tracker.repository.*;
 import com.tracker.service.ResumeAnalyzerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -21,8 +22,11 @@ import java.util.List;
  * Features idempotent seeding: runs safely on startup without duplicating records
  * or overwriting existing user modifications, and automatically attaches orphaned records
  * to the default demo user.
+ * 
+ * Restricted to the "dev" profile so it does not seed demonstration users or records in production.
  */
 @Component
+@Profile("dev")
 public class DataLoader implements CommandLineRunner {
 
     @Autowired
