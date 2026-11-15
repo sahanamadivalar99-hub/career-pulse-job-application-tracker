@@ -31,7 +31,6 @@ public class Company {
     @Column(name = "rating")
     private Double rating = 4.0;
 
-    @Lob
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 

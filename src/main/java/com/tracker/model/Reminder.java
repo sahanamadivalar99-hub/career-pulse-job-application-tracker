@@ -34,7 +34,6 @@ public class Reminder {
     @Column(name = "is_completed")
     private boolean completed = false;
 
-    @Lob
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 

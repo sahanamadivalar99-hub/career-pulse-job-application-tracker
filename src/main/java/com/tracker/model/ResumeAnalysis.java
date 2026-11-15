@@ -18,35 +18,27 @@ public class ResumeAnalysis {
     @Column(name = "ats_score", nullable = false)
     private int atsScore;
 
-    @Lob
     @Column(name = "technical_skills", columnDefinition = "TEXT")
     private String technicalSkills; // comma or JSON separated
 
-    @Lob
     @Column(name = "missing_skills", columnDefinition = "TEXT")
     private String missingSkills;
 
-    @Lob
     @Column(name = "soft_skills", columnDefinition = "TEXT")
     private String softSkills;
 
-    @Lob
     @Column(name = "missing_sections", columnDefinition = "TEXT")
     private String missingSections;
 
-    @Lob
     @Column(name = "project_suggestions", columnDefinition = "TEXT")
     private String projectSuggestions;
 
-    @Lob
     @Column(name = "certification_recommendations", columnDefinition = "TEXT")
     private String certificationRecommendations;
 
-    @Lob
     @Column(name = "summary_suggestions", columnDefinition = "TEXT")
     private String summarySuggestions;
 
-    @Lob
     @Column(name = "formatting_suggestions", columnDefinition = "TEXT")
     private String formattingSuggestions;
 

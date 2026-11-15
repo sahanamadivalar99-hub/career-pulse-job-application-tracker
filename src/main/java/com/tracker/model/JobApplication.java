@@ -22,7 +22,6 @@ public class JobApplication {
     @Column(name = "job_role", nullable = false)
     private String jobRole;
 
-    @Lob
     @Column(name = "job_description", columnDefinition = "TEXT")
     private String jobDescription;
 
@@ -44,7 +43,6 @@ public class JobApplication {
     @Column(name = "status", nullable = false)
     private ApplicationStatus status = ApplicationStatus.APPLIED;
 
-    @Lob
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 

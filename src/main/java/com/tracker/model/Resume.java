@@ -26,8 +26,7 @@ public class Resume {
     @Column(name = "file_path")
     private String filePath;
 
-    @Lob
-    @Column(name = "extracted_text", columnDefinition = "LONGTEXT")
+    @Column(name = "extracted_text", columnDefinition = "TEXT")
     private String extractedText;
 
     @Column(name = "upload_date", nullable = false)

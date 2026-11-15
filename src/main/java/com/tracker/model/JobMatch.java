@@ -17,8 +17,7 @@ public class JobMatch {
     @Column(name = "company_name")
     private String companyName;
 
-    @Lob
-    @Column(name = "job_description", columnDefinition = "LONGTEXT", nullable = false)
+    @Column(name = "job_description", columnDefinition = "TEXT", nullable = false)
     private String jobDescription;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,19 +31,15 @@ public class JobMatch {
     @Column(name = "match_percentage", nullable = false)
     private int matchPercentage;
 
-    @Lob
     @Column(name = "matching_skills", columnDefinition = "TEXT")
     private String matchingSkills;
 
-    @Lob
     @Column(name = "missing_skills", columnDefinition = "TEXT")
     private String missingSkills;
 
-    @Lob
     @Column(name = "important_keywords", columnDefinition = "TEXT")
     private String importantKeywords;
 
-    @Lob
     @Column(name = "recommendations", columnDefinition = "TEXT")
     private String recommendations;
 

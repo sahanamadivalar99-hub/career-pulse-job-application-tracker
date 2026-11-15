@@ -14,8 +14,7 @@ public class ChatMessage {
     @Column(name = "role", nullable = false)
     private String role; // "user" or "assistant"
 
-    @Lob
-    @Column(name = "content", columnDefinition = "LONGTEXT", nullable = false)
+    @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
 
     @Column(name = "provider")
